@@ -1,2 +1,3 @@
-# ckw
-Parsing of smart meter data from central Switzerland
+# Descrition of the data
+
+# Content of this repository
