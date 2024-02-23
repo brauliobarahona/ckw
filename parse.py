@@ -1,7 +1,7 @@
 """
   Parse CKW open data hosted at https://open.data.axpo.com
 
-  There are two datasets:
+  There are two datasets provided by CKW, one of them is ...:
     **Datensatz A** : dataset a, anonymized data
     **Datensatz B** : dataset b, aggregated data
 
@@ -14,6 +14,7 @@
 
   TODO: forrmat of file names is given, just create file name with user input
           YYYYMM.csv.gzs
+  *Note: prepare the download directories before runnign the script
 """
 import os
 from bs4 import BeautifulSoup
@@ -56,10 +57,13 @@ _prefix = "https://open.data.axpo.com/%24web/"
 """ download a batch of files
   1. given a local directory
   2. check if files exist
-  3. download files from the website
+  3. try to download files from the website
+
+  *!* Note: you need to have enough disk space, this naive approach will write empty files when
+  there is not enough space, those you need to clean later
 """
 # check if files exist
-downloads = "/Users/tabaraho/ckw" # *.gz and *.csv files
+downloads = "/home/ubuntu/d^ata/downloads/ckw" #"/Users/tabaraho/ckw" # *.gz and *.csv files
 for fi in file_names:
   fn = os.path.join(downloads, fi)
   
@@ -72,8 +76,7 @@ for fi in file_names:
     curl_cmd = f"curl -o {fn} {url_i}"
 
     print(curl_cmd)
-    #os.system(curl_cmd)
-  print(fn)
+    os.system(curl_cmd)
   
 # Unzip files
 for fi in file_names:
@@ -85,4 +88,5 @@ for fi in file_names:
     # unzip file
     unzip_cmd = f"gunzip -c {fn} > {fout}"
     print(unzip_cmd)
-    #os.system(unzip_cmd)
+    os.system(unzip_cmd)
+
