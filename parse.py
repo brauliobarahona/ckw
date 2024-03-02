@@ -14,7 +14,33 @@
 
   TODO: format of file names is given, just create file name with user input
           YYYYMM.csv.gzs
-  *Note: prepare the download directories before runnign the script
+
+  TODO: evaluate streaming IO in py arrow
+          import gzip
+          with gzip.open('example.gz', 'wb') as f:
+            f.write(b'some data\n' * 3)
+          stream = pa.input_stream('example.gz')
+          stream.read()
+
+  *** other notes/todos ***
+  # TODO: turn it into a command line script, main parameters include 
+         * download directory
+         * storage directory
+      the application should simply, 
+         (1) scan the available disk space
+         (2) make sure directories are available and writeable
+         (3) clean directories if needed
+             - delete CSV files
+             - delete gz files
+         (4) parse *.csv files (if any) to *.parquet files 
+             - clean *.csv files after parsing
+         (5) unzip *.gz files that are already downloaded
+             - clean *.gz files after
+         (6) assess which of the files available for download are already 
+         parsed to parquet
+         (7) download and parse remaining files (clean up if needed)
+
+  *Note: prepare the download directories before runnign the scripts
 """
 import os
 from bs4 import BeautifulSoup
@@ -26,24 +52,6 @@ import pyarrow.parquet as pq
 import dask
 dask.config.set({'dataframe.query-planning': True})
 import dask.dataframe as dd
-
-# TODO: turn it into a command line script, main parameters include 
-#         * download directory
-#         * storage directory
-#  the application should simply, 
-#         (1) scan the available disk space
-#         (2) make sure directories are available and writeable
-#         (3) clean directories if needed
-#             - delete CSV files
-#             - delete gz files
-#         (4) parse *.csv files (if any) to *.parquet files 
-#             - clean *.csv files after parsing
-#         (5) unzip *.gz files that are already downloaded
-#             - clean *.gz files after
-#         (6) assess which of the files available for download are already 
-#         parsed to parquet
-#         (7) download and parse remaining files (clean up if needed)
-#
 
 def metadata_parser():
   """ Parse website text to extract file names and other metadata  
@@ -140,6 +148,19 @@ def prepare_dirs():
   """
   if flg_rm_CSV:
     os.system("rm {:}/*.csv".format(storage))
+
+def copy(dir_source, dir_target):
+  #dir_source = "/home/ubuntu/storage/ckw/*"
+  #dir_target = "/home/ubuntu/data/ckw/storage"
+  fns = glob.glob(dir_source + "/*", dir_target)
+  for i in fns:
+    o = os.path.join(dir_target, 
+    os.path.basename(i))
+    
+    #print("cp -rf {:} {:}".format(i, o))
+    #os.mkdir(o)
+    os.system("cp -rf {:} {:}".format(i, o))
+    print(".")
 
 def download(fn, flg="curl"):
   """
@@ -238,8 +259,8 @@ def csv2parquet(fi):
 """
 # --- Parse settings --- #
 # Read file names in data folder
-downloads = "/home/ubuntu/data/downloads/ckw" #"/Users/tabaraho/ckw" # *.gz and *.csv files
-storage = "/home/ubuntu/storage/ckw" #"/Users/tabaraho/ckw" # *.gz and *.csv files
+downloads = "/home/ubuntu/data/ckw/downloads" #"/Users/tabaraho/ckw" # *.gz and *.csv files
+storage = "/home/ubuntu/data/ckw/storage" #"/Users/tabaraho/ckw" # *.gz and *.csv files
 
 flg_rm_CSV = True # remove CSV files
 flg_rm_GZ = True # remove downloaded zip files
@@ -336,32 +357,3 @@ for fi in fns:
     os.remove(f)
 
   print(" . . . ")
-
-def preprocessing():
-  # read parquet dataset and parse ids
-  #print(f_out)
-  print(" ********* ")
-  dataset = pa.parquet.ParquetDataset(file2parquet)
-  ids = dataset.read(columns=["id"]) # *!* 11 GB for a 20 GB file!?
-  _ids = pa.compute.unique(ids[0])
-  ids_arr = pa.array(_ids)
-  len(_ids) # save these ids to a file 
-
-  fid = os.path.join(storage, "IDS_" + os.path.basename(file2parquet))
-  pa.parquet.write_table(pa.table([ids_arr], names=["id"]), fid)
-
-  # verify that the parquet file was created
-  if os.path.exists(fid):
-    print("The following file with a list of unique ids was created: ".format(fid))
-  elif not os.path.exists(fid):
-    print("it was not me")
-
-
-  """ *!* test gzip
-  with gzip.open(fn, "rb") as f:
-    file_content = f.read()
-    f_out
-    with open("storage/{}".format(fn.replace(".gz", "")), "wb") as f:
-      f.write(file_content)¨
-      print("Unzipped file: {}".format(fn))
-  """
