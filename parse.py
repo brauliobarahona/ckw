@@ -216,6 +216,8 @@ def batch_download():
 def csv2parquet(fi):
   """ Use Dask to parse CSV to parquet 
     fi : csv file name
+
+    *!* TODO: use rather polars: https://h2oai.github.io/db-benchmark/
   """
 
   fi = os.path.join(storage, fi)
