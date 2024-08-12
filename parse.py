@@ -42,12 +42,11 @@
 
   *Note: prepare the download directories before runnign the scripts
 """
-import os
+import os, glob, requests
 from bs4 import BeautifulSoup
-import requests
-import pyarrow as pa
-import pyarrow.csv
-import pyarrow.parquet as pq 
+#import pyarrow as pa
+#import pyarrow.csv
+#import pyarrow.parquet as pq 
 
 import dask
 dask.config.set({'dataframe.query-planning': True})
