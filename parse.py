@@ -5,12 +5,12 @@
     **Datensatz A** : dataset a, anonymized data
     **Datensatz B** : dataset b, aggregated data
 
-  This scripts does the following:
+  This script does the following:
     1. Download data from website
     2. Unzip data
     3. Parse data to a compressed format
 
-  The file names can be parse from the website or a text file, see metatada.txt
+  The file names can be parsed from the website or a text file, see metatada.txt
 
   TODO: format of file names is given, just create file name with user input
           YYYYMM.csv.gzs
@@ -162,18 +162,41 @@ def copy(dir_source, dir_target):
     os.system("cp -rf {:} {:}".format(i, o))
     print(".")
 
-def download(fn, flg="curl"):
+def download(fn, url_prefix, flg="curl"):
   """
     fn : 
-    _prefix:
+    url_prefix:
 
     TODO: break when no file is found to download
   """
   if os.path.exists(fn):
     print("This file already exists: {}".format(fn))
   elif not os.path.exists(fn):
-    # download file and save it to specified path fn
+    # build url to download file from
     url_i = url_prefix + os.path.basename(fn)
+    
+    # download file and save it to specified path fn
+    curl_cmd = f"curl -o {fn} {url_i}"
+
+    print(curl_cmd)
+    _msg = os.system(curl_cmd)
+  return _msg
+
+def download_zenodo_record(zr, url="https://zenodo.org/api/records", flg="curl", **kwargs):
+  """
+    TODO: break when no file is found to download
+  """
+  if os.path.exists(fn):
+    print("This file already exists: {}".format(fn))
+  elif not os.path.exists(fn):
+    # build url to download file from
+    if url_zenodo:
+      url_i = url_zenodo
+      print(url_i)
+    else:
+      url_i = url_prefix + os.path.basename(fn)
+    
+    # download file and save it to specified path fn
     curl_cmd = f"curl -o {fn} {url_i}"
 
     print(curl_cmd)
@@ -247,113 +270,114 @@ def csv2parquet(fi):
 # ---- #
 # Main #
 # ---- #
-""" Parse gz to parquet
-  1. unzip a file from data folder to storage folder
-  2. read csv file to memory
-  3. save pyarrow table to parquet
+if __name__ == "__main__":
+  """ Parse gz to parquet
+    1. unzip a file from data folder to storage folder
+    2. read csv file to memory
+    3. save pyarrow table to parquet
 
-  TODO: check if output directory exists, if not create it
-  TODO: check disk space before unzipping file
-  TODO: check disk space before saving parquet file
-  TODO: be aware if users cannot write to disk
-"""
-# --- Parse settings --- #
-# Read file names in data folder
-downloads = "/home/ubuntu/data/ckw/downloads" #"/Users/tabaraho/ckw" # *.gz and *.csv files
-storage = "/home/ubuntu/data/ckw/storage" #"/Users/tabaraho/ckw" # *.gz and *.csv files
+    TODO: check if output directory exists, if not create it
+    TODO: check disk space before unzipping file
+    TODO: check disk space before saving parquet file
+    TODO: be aware if users cannot write to disk
+  """
+  # --- Parse settings --- #
+  # Read file names in data folder
+  downloads = "/home/ubuntu/data/ckw/downloads" #"/Users/tabaraho/ckw" # *.gz and *.csv files
+  storage = "/home/ubuntu/data/ckw/storage" #"/Users/tabaraho/ckw" # *.gz and *.csv files
 
-flg_rm_CSV = True # remove CSV files
-flg_rm_GZ = True # remove downloaded zip files
+  flg_rm_CSV = True # remove CSV files
+  flg_rm_GZ = True # remove downloaded zip files
 
-file_names, url_prefix, _ = metadata_parser()
-_redundant_gz, _redundant_csv, _fls_pq, _fls_CSV, f2parse, f2unzip = filenames()
+  file_names, url_prefix, _ = metadata_parser()
+  _redundant_gz, _redundant_csv, _fls_pq, _fls_CSV, f2parse, f2unzip = filenames()
 
-# *!* clean if needed or wished, see cleaning() and prepare_dirs()
+  # *!* clean if needed or wished, see cleaning() and prepare_dirs()
 
-# Unzip files that are already downloaded in the data folder to storage folder
-if len(f2unzip) > 0:
-  files2unzip = []
-  for f in f2unzip:
-    if f.startswith("ckw_opendata_smartmeter_dataset_a") & f.endswith(".gz"):
-      files2unzip.append(f)
-      #print("File to unzip: {}".format(f))
-    else:
-      print("This file seems not to belong to the CKW dataset: {:}".format(f))
+  # Unzip files that are already downloaded in the data folder to storage folder
+  if len(f2unzip) > 0:
+    files2unzip = []
+    for f in f2unzip:
+      if f.startswith("ckw_opendata_smartmeter_dataset_a") & f.endswith(".gz"):
+        files2unzip.append(f)
+        #print("File to unzip: {}".format(f))
+      else:
+        print("This file seems not to belong to the CKW dataset: {:}".format(f))
 
-  files2unzip.sort()
-  N = 8 #len(files2unzip) # TODO: expose it as an option, to not process all files at once
-  for i in range(N): #fns: # *!* maybe sort of prompt the user to enter the file name
-    """ Monolith workflow
-      1. get list of *gz files
-      2. parse to arrow, 
-      3. get ids,
-      4. save id file
-      5. save data file
-    """
-    fn = files2unzip[i]
-    if fn.endswith(".gz"): # *!* redundant check
-      f_in = os.path.join(downloads, fn)
-      f_out = os.path.join(storage, fn.replace(".gz", "")) #
+    files2unzip.sort()
+    N = 8 #len(files2unzip) # TODO: expose it as an option, to not process all files at once
+    for i in range(N): #fns: # *!* maybe sort of prompt the user to enter the file name
+      """ Monolith workflow
+        1. get list of *gz files
+        2. parse to arrow, 
+        3. get ids,
+        4. save id file
+        5. save data file
+      """
+      fn = files2unzip[i]
+      if fn.endswith(".gz"): # *!* redundant check
+        f_in = os.path.join(downloads, fn)
+        f_out = os.path.join(storage, fn.replace(".gz", "")) #
 
-      unzip_cmd = f"gunzip -c {f_in} > {f_out}" # unzip f_in and output csv file f_out
+        unzip_cmd = f"gunzip -c {f_in} > {f_out}" # unzip f_in and output csv file f_out
 
-      try:
-        if not os.path.exists(f_out):
-          print("The following file will be unzipped: ") # parsing message
-          print(unzip_cmd)
-          os.system(unzip_cmd)
-      except: # TODO: catch and handle exceptions
-        pass
+        try:
+          if not os.path.exists(f_out):
+            print("The following file will be unzipped: ") # parsing message
+            print(unzip_cmd)
+            os.system(unzip_cmd)
+        except: # TODO: catch and handle exceptions
+          pass
 
-      # TODO: log files that were unzipped, use logging module or somethin else to avoid cluttering 
-      # the console with messages about unzipping files that were already unzipped, and the main
-      # code base with print statements
-      if os.path.exists(f_out):
-        print("Unzipped *.gz to: {}".format(os.path.basename(f_out)))
+        # TODO: log files that were unzipped, use logging module or somethin else to avoid cluttering 
+        # the console with messages about unzipping files that were already unzipped, and the main
+        # code base with print statements
+        if os.path.exists(f_out):
+          print("Unzipped *.gz to: {}".format(os.path.basename(f_out)))
 
-        if True: # TODO: expose it for user to control if they want to delete *.gz files
-          print("I am deleting: {:}".format(f_in))
-          os.remove(f_in)
-        # TODO: write to log file
-        #with open("unzipped_files.log", "a") as f:
-        #  f.write(f_out + "\n")
-      
-      # after converting CSV to parquet then delete csv files
-      prepare_dirs()
-else:
-  print("===============================")
-  print("The download directory is empty")
-  print("===============================")
+          if True: # TODO: expose it for user to control if they want to delete *.gz files
+            print("I am deleting: {:}".format(f_in))
+            os.remove(f_in)
+          # TODO: write to log file
+          #with open("unzipped_files.log", "a") as f:
+          #  f.write(f_out + "\n")
+        
+        # after converting CSV to parquet then delete csv files
+        prepare_dirs()
+  else:
+    print("===============================")
+    print("The download directory is empty")
+    print("===============================")
 
-# compare files that are already parsed as parquet to those available for download
-_fls_pq # file names of ckw data parsed to parsed to parquet and also pre-processing files
-        #   like: 
-        #       * "IDS_" files containing unique ids
-        #       * "ts_"  files containing time series sets
-fns = set.difference(set(f2parse), set(_fls_pq)) # redundant check 
+  # compare files that are already parsed as parquet to those available for download
+  _fls_pq # file names of ckw data parsed to parsed to parquet and also pre-processing files
+          #   like: 
+          #       * "IDS_" files containing unique ids
+          #       * "ts_"  files containing time series sets
+  fns = set.difference(set(f2parse), set(_fls_pq)) # redundant check 
 
-print("I will proceed to download a gz file, unzip, parse csv to parquet, and")
-print(" continue file-by-file, deleting redundant files in the process ...")
-print(" a total of {:} files is to be downloaded".format(len(fns)))
-_ = [print(i) for i in fns]
+  print("I will proceed to download a gz file, unzip, parse csv to parquet, and")
+  print(" continue file-by-file, deleting redundant files in the process ...")
+  print(" a total of {:} files is to be downloaded".format(len(fns)))
+  _ = [print(i) for i in fns]
 
-for fi in fns:
-  fi = fi + ".csv.gz" # keep same structre as in file names parsing script
-  f = os.path.join(downloads, fi)
-  f_csv = os.path.join(storage, fi.replace(".gz", ""))
+  for fi in fns:
+    fi = fi + ".csv.gz" # keep same structre as in file names parsing script
+    f = os.path.join(downloads, fi)
+    f_csv = os.path.join(storage, fi.replace(".gz", ""))
 
-  # download and unzip
-  _curl_output = download(f)
-  _gunzip_output = gunzip(f, f_csv)
-  
-  # parse to csv
-  csv2parquet(f_csv)
+    # download and unzip
+    _curl_output = download(f)
+    _gunzip_output = gunzip(f, f_csv)
+    
+    # parse to csv
+    csv2parquet(f_csv)
 
-  # clean up
-  if os.path.isfile(f_csv): # remove csv file
-    os.remove(f_csv) # TODO: log files that were removed
+    # clean up
+    if os.path.isfile(f_csv): # remove csv file
+      os.remove(f_csv) # TODO: log files that were removed
 
-  if os.path.isfile(f): # remove gz file
-    os.remove(f)
+    if os.path.isfile(f): # remove gz file
+      os.remove(f)
 
-  print(" . . . ")
+    print(" . . . ")

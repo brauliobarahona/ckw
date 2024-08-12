@@ -78,8 +78,9 @@ glob.os.makedirs(out_dir, exist_ok=True)
 
 # *!* check if there are any files already there and select different IDs if sort
 fns = glob.glob(out_dir + "/*.parquet") # 10.03.24 17 hrs :: 896 files parsed so far
+                                        # 23.04.24 18 hrs :: 5000 files parsed so far
 
-for i in T_id[0][:5000]:
+for i in T_id[0][5000:20000]:
   print(". . . {:}".format(i))
   ts_per_id = []
   for fi in f_d: # source datasets
