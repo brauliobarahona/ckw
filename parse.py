@@ -277,6 +277,9 @@ if __name__ == "__main__":
     2. read csv file to memory
     3. save pyarrow table to parquet
 
+    TODO:  describe the setup of data storage
+      * a folder to download the original data from CKW open data platform, csv files each one a few GBs
+      
     TODO: check if output directory exists, if not create it
     TODO: check disk space before unzipping file
     TODO: check disk space before saving parquet file
@@ -285,6 +288,8 @@ if __name__ == "__main__":
   # --- Parse settings --- #
   # Read file names in data folder
   downloads = "/home/ubuntu/data/ckw/downloads" #"/Users/tabaraho/ckw" # *.gz and *.csv files
+  downloads = "/home/ubuntu/data/ckw/downloads" #"/Users/tabaraho/ckw" # *.gz and *.csv files
+  
   storage = "/home/ubuntu/data/ckw/storage" #"/Users/tabaraho/ckw" # *.gz and *.csv files
 
   flg_rm_CSV = True # remove CSV files
