@@ -42,8 +42,10 @@
 
   *Note: prepare the download directories before runnign the scripts
 """
+
 import os, glob, requests
 from bs4 import BeautifulSoup
+import pandas as pd
 #import pyarrow as pa
 #import pyarrow.csv
 #import pyarrow.parquet as pq 
@@ -51,6 +53,45 @@ from bs4 import BeautifulSoup
 import dask
 dask.config.set({'dataframe.query-planning': True})
 import dask.dataframe as dd
+
+# convert metadata_parser to a class
+class MetadataParser:
+  def __init__(self):
+    self.url_da = "https://open.data.axpo.com/%24web/index.html#dataset-a"
+    self.html_content = requests.get(self.url_da).text
+    self.soup = BeautifulSoup(self.html_content, features="html.parser")
+    self.html_tables = self.soup.find_all("table")
+    self.file_names = []
+    self._prefix = "https://open.data.axpo.com/%24web/"
+
+  def file_names(self, table = "dataset A"):
+    """ TODO: write doc string :: get file names from files listed in CKW open 
+    data portal
+    """
+    tables = {"dataset A": self.html_tables[0], 
+              "dataset B": self.html_tables[1], 
+              "renewable energy data": self.html_tables[2]
+              }
+    
+    tr_list = tables[table].find_all("tr") # header and rows
+    for tr_i in tr_list:
+      fn = tr_i.find_all("th")[0].text
+
+      if fn.endswith(".csv.gz"):
+        self.file_names.append(fn)
+
+        file_size = tr_i.find_all("td")[2].text
+        date = tr_i.find_all("td")[1].text
+        #link = tr_i.find_all("td")[-1].contents # link
+      else:
+        continue
+
+    return self.file_names, self._prefix, self.html_table
+
+  def __call__(self):
+    """ TODO: test this method
+    """
+    return self.metadata_parser()
 
 def metadata_parser():
   """ Parse website text to extract file names and other metadata  
@@ -62,10 +103,29 @@ def metadata_parser():
 
   # parse html content, extract body from html content text
   soup = BeautifulSoup(html_content, features="html.parser")
-  html_table = soup.find_all("table") # ResultSet object : dataset a (anonymized), dataset b (aggregated)
+  html_tables = soup.find_all("table") # ResultSet object : 
+                                       #  
+                                       # dataset a (anonymized), 
+                                       # dataset b (aggregated),
+                                       # *!* renewable energy data
 
-  # extract tr from element tag of html_table containing file names of dataset a
-  tr_list = html_table[0].find_all("tr") 
+  # *!* dataset a is the first table in the html content
+  tr_list = html_tables[0].find_all("tr") # header and rows
+  hdrs = tr_list[0].find_all("th") # header
+  dic_table = {hdr.text: [] for hdr in hdrs}
+  for row in tr_list[1:]:
+    cells = row.find_all(["th", "td"])
+    for cell, hdr in zip(cells, hdrs): 
+      dic_table[hdr.text].append(cell.text)
+
+  df= pd.DataFrame(dic_table)
+  df[['DateigrÃ¶sse', 'Export Datum', 'Zeitraum', 'Dateiname']]         
+
+  tr_list[1].find_all("td") # one row
+  tr_list[1].find_all(["th", "td "]) # one row
+  for row in tr_list:
+    cells = row.find_all(["th", "td"])
+    print(" | ".join([cell.get_text() for cell in cells]))
 
   # find in bs4.element.ResultSet
   file_names = []
