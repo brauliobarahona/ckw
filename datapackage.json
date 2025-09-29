@@ -1,0 +1,134 @@
+{
+  "name": "ckw-smart-meter-data",
+  "title": "CKW Smart Meter Data - Electricity Consumption in Canton Lucerne",
+  "description": "Anonymised and aggregated smart meter data measuring electricity consumption from the CKW Group, a distribution system operator supplying more than 200,000 end customers in Central Switzerland. This dataset contains a small sample of CKW data set A, with 15-minute interval electricity consumption measurements from individual smart meters, stored as parquet files organized by smart meter ID. The original data covers the period from January 2021 to April 2024.",
+  "homepage": "https://zenodo.org/records/13304499",
+  "version": "1.0.0",
+  "created": "2024-08-16",
+  "licenses": [
+    {
+      "name": "CC-BY-4.0",
+      "path": "https://creativecommons.org/licenses/by/4.0/legalcode",
+      "title": "Creative Commons Attribution 4.0 International"
+    }
+  ],
+  "sources": [
+    {
+      "name": "CKW Open Data Platform",
+      "path": "https://www.ckw.ch/landingpages/open-data",
+      "title": "CKW Open Data - Smart Meter Dataset A"
+    },
+    {
+      "name": "Axpo Open Data Portal",
+      "path": "https://open.data.axpo.com/$web/index.html#dataset-a",
+      "title": "CKW Smart Meter Dataset A - Original Source"
+    }
+  ],
+  "contributors": [
+    {
+      "title": "Lucerne University of Applied Sciences and Arts",
+      "role": "author"
+    }
+  ],
+  "keywords": [
+    "smart meter",
+    "electricity consumption",
+    "energy",
+    "time series",
+    "Switzerland",
+    "Canton Lucerne",
+    "CKW",
+    "open data"
+  ],
+  "temporal": {
+    "start": "2021-01-01",
+    "end": "2024-04-30"
+  },
+  "spatial": {
+    "location": "Canton Lucerne, Switzerland",
+    "geonames_id": 2659810
+  },
+  "resources": [
+    {
+      "name": "smart-meter-timeseries",
+      "path": "data/*.parquet",
+      "format": "parquet",
+      "mediatype": "application/x-parquet",
+      "encoding": "binary",
+      "description": "Individual smart meter electricity consumption time series data. Each parquet file is named with the anonymized smart meter ID (e.g., 027ceb7b8fd77a4b11b3b497e9f0b174.parquet) and contains all consumption measurements for that specific meter across the covered time period.",
+      "schema": {
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Anonymized smart meter counter ID (MD5 hash)"
+          },
+          {
+            "name": "timestamp",
+            "type": "datetime",
+            "description": "UTC timestamp at the beginning of the 15-minute measurement window (ISO-8601 format)",
+            "format": "default"
+          },
+          {
+            "name": "value_kwh",
+            "type": "number",
+            "description": "Electricity consumption in kilowatt-hours (kWh) during the 15-minute time window"
+          }
+        ],
+        "primaryKey": ["id", "timestamp"]
+      },
+      "bytes": 43929600,
+      "hash": "md5:varies-per-file"
+    }
+  ],
+  "views": [
+    {
+      "name": "consumption-timeseries",
+      "title": "Electricity Consumption Time Series",
+      "resources": [
+        "smart-meter-timeseries"
+      ],
+      "specType": "simple",
+      "spec": {
+        "type": "line",
+        "group": "timestamp",
+        "series": [
+          "value_kwh"
+        ]
+      }
+    },
+    {
+      "name": "daily-consumption",
+      "title": "Daily Aggregated Consumption",
+      "resources": [
+        "smart-meter-timeseries"
+      ],
+      "specType": "simple",
+      "spec": {
+        "type": "bar",
+        "group": "date",
+        "series": [
+          "daily_kwh"
+        ]
+      }
+    }
+  ],
+  "funding": [
+    {
+      "name": "AISOP Project",
+      "grant": "883973",
+      "program": "Horizon 2020",
+      "description": "ERA-Net Smart Energy Systems joint call on digital transformation for green energy transition"
+    }
+  ],
+  "notes": [
+    "This is a small sample dataset containing 64 smart meters from the complete CKW dataset.",
+    "The original CKW data is published monthly as gzip-compressed CSV files, one file per calendar month.",
+    "This sample has been processed and converted to parquet format, with data partitioned by smart meter ID.",
+    "Each measurement represents consumption during a 15-minute interval.",
+    "For access to the complete dataset, contact the authors or visit the CKW Open Data platform.",
+    "The dataset covers approximately 3.5 years of measurements from January 2021 to April 2024.",
+    "Time zone: All timestamps are in UTC."
+  ],
+  "collection": "energy-data"
+}
