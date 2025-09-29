@@ -15,11 +15,11 @@ This data set contains a small sample of the CKW data set A sorted per smart met
 Setup workflow to work remotely from VM hosted in Switch engines.
 
 In order to authenticate to git and be able to clone the repository, first make sure you have
-	- [ ] a github account
-	- [ ] a personal access token
-	- [ ] a ssh key pair
-	- [ ] a ssh key pair added to your github account
-	- [ ] a ssh key pair added to your ssh-agent
+- [ ] a github account
+- [ ] a personal access token
+- [ ] a ssh key pair
+- [ ] a ssh key pair added to your github account
+- [ ] a ssh key pair added to your ssh-agent
 
 1. create a new ssh key pair
 ```bash
