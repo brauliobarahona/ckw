@@ -14,14 +14,19 @@
   ],
   "sources": [
     {
+      "name": "CKW Smart Meter Data",
+      "path": "https://zenodo.org/records/13304499",
+      "title": "CKW Smart Meter Data Sample Dataset sample on Zenodo"
+    },
+    {
       "name": "CKW Open Data Platform",
       "path": "https://www.ckw.ch/landingpages/open-data",
       "title": "CKW Smart-Meter-Verbrauchsdaten verfügbar"
     },
     {
-      "name": "Axpo Open Data Portal",
+      "name": "Datensatz A",
       "path": "https://open.data.axpo.com/$web/index.html#dataset-a",
-      "title": "CKW Smart Meter Dataset A - Original Source"
+      "title": "Datensatz A – anonymisierte Smart-Meter-Daten"
     }
   ],
   "contributors": [
