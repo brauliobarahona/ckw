@@ -51,9 +51,39 @@
   },
   "spatial": {
     "location": "Canton Lucerne, Switzerland",
-    "geonames_id": 2659810
   },
   "resources": [
+    {
+      "name": "sample Dataset A",
+      "path": "data/sample/*.csv",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "utf-8",
+      "description": "Sample of ",
+      "schema": {
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Anonymized smart meter counter ID (MD5 hash)"
+          },
+          {
+            "name": "timestamp",
+            "type": "datetime",
+            "description": "UTC timestamp at the beginning of the 15-minute measurement window (ISO-8601 format)",
+            "format": "default"
+          },
+          {
+            "name": "value_kwh",
+            "type": "number",
+            "description": "Electricity consumption in kilowatt-hours (kWh) during the 15-minute time window"
+          }
+        ],
+        "primaryKey": ["id", "timestamp"]
+      },
+      "bytes": 43929600,
+      "hash": "md5:varies-per-file"
+    },
     {
       "name": "smart-meter-timeseries",
       "path": "data/*.parquet",
